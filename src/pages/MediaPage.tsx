@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Plus, Trash2, UploadCloud, ExternalLink, FileVideo, FileAudio } from 'lucide-react';
+import { Plus, Pencil, Trash2, UploadCloud, ExternalLink, FileVideo, FileAudio } from 'lucide-react';
 import { api, apiError } from '@/lib/api';
 import { useCollection, useCrudMutations } from '@/lib/crud';
 import type { Media, MediaOwnerType, MediaType } from '@/lib/types';
@@ -69,6 +69,7 @@ export function MediaPage() {
   const [ownerType, setOwnerType] = useState<MediaOwnerType | ''>('');
   const [owner, setOwner] = useState('');
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Media | null>(null);
   const [deleting, setDeleting] = useState<Media | null>(null);
 
   const filter = ownerType && owner ? { ownerType, owner } : ownerType ? { ownerType } : undefined;
@@ -163,6 +164,14 @@ export function MediaPage() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => setEditing(m)}
+                    title="Modifier"
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="text-destructive"
                     onClick={() => setDeleting(m)}
                   >
@@ -175,7 +184,15 @@ export function MediaPage() {
         </CardContent>
       </Card>
 
-      <MediaCreateDialog open={open} onOpenChange={setOpen} />
+      <MediaFormDialog open={open} onOpenChange={setOpen} />
+
+      {editing && (
+        <MediaFormDialog
+          open
+          media={editing}
+          onOpenChange={(v) => !v && setEditing(null)}
+        />
+      )}
 
       <ConfirmDialog
         open={Boolean(deleting)}
@@ -194,21 +211,25 @@ export function MediaPage() {
   );
 }
 
-function MediaCreateDialog({
+function MediaFormDialog({
   open,
   onOpenChange,
+  media,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  media?: Media;
 }) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [ownerType, setOwnerType] = useState<MediaOwnerType | ''>('');
-  const [owner, setOwner] = useState('');
-  const [type, setType] = useState<MediaType>('image');
-  const [url, setUrl] = useState('');
-  const [publicId, setPublicId] = useState<string | undefined>();
-  const { create } = useCrudMutations('/media', 'Média');
+  const isEditing = Boolean(media);
+  const [name, setName] = useState(media?.name ?? '');
+  const [description, setDescription] = useState(media?.description ?? '');
+  const [ownerType, setOwnerType] = useState<MediaOwnerType | ''>(media?.ownerType ?? '');
+  const [owner, setOwner] = useState(media?.owner ?? '');
+  const [type, setType] = useState<MediaType>(media?.type ?? 'image');
+  const [url, setUrl] = useState(media?.url ?? '');
+  const [publicId, setPublicId] = useState<string | undefined>(media?.publicId);
+  const { create, update } = useCrudMutations('/media', 'Média');
+  const pending = create.isPending || update.isPending;
 
   const reset = () => {
     setName('');
@@ -245,34 +266,40 @@ function MediaCreateDialog({
       toast.error('Téléversez un fichier ou saisissez une URL.');
       return;
     }
-    create.mutate(
-      { name, description, type, url, publicId, ownerType, owner },
-      {
+    const payload = { name, description, type, url, publicId, ownerType, owner };
+    if (media) {
+      update.mutate(
+        { id: media._id, payload },
+        { onSuccess: () => onOpenChange(false) },
+      );
+    } else {
+      create.mutate(payload, {
         onSuccess: () => {
           reset();
           onOpenChange(false);
         },
-      },
-    );
+      });
+    }
   };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        if (!v) reset();
+        if (!v && !isEditing) reset();
         onOpenChange(v);
       }}
     >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Nouveau média</DialogTitle>
+      <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden">
+        <DialogHeader className="shrink-0 pb-4">
+          <DialogTitle>{isEditing ? 'Modifier le média' : 'Nouveau média'}</DialogTitle>
           <DialogDescription>
             Téléversez un fichier (Cloudinary) ou fournissez une URL, puis
             rattachez-le à un contenu.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
           <div className="space-y-1.5">
             <Label>Fichier</Label>
             <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed py-6 text-sm text-muted-foreground hover:bg-muted/50">
@@ -280,7 +307,7 @@ function MediaCreateDialog({
               {upload.isPending
                 ? 'Téléversement…'
                 : url
-                  ? 'Fichier prêt — cliquez pour remplacer'
+                  ? 'Fichier actuel — cliquez pour remplacer'
                   : 'Cliquez pour choisir un fichier'}
               <input
                 type="file"
@@ -364,13 +391,14 @@ function MediaCreateDialog({
               />
             </div>
           )}
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0 border-t pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={create.isPending || !ownerType || !owner}>
-              {create.isPending ? 'Enregistrement…' : 'Créer'}
+            <Button type="submit" disabled={pending || !ownerType || !owner}>
+              {pending ? 'Enregistrement…' : isEditing ? 'Enregistrer' : 'Créer'}
             </Button>
           </DialogFooter>
         </form>

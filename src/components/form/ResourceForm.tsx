@@ -75,7 +75,8 @@ export function ResourceForm({
   });
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
       {visibleFields.map((field) => (
         <div key={field.name} className="space-y-1.5">
           {field.type !== 'switch' && (
@@ -280,8 +281,9 @@ export function ResourceForm({
           )}
         </div>
       ))}
+      </div>
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="mt-4 flex shrink-0 justify-end gap-2 border-t pt-4">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Annuler

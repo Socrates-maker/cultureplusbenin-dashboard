@@ -206,8 +206,8 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
 
       {/* Create / edit dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden">
+          <DialogHeader className="shrink-0 pb-4">
             <DialogTitle>
               {editing ? `Modifier — ${config.singular}` : `Nouveau ${config.singular.toLowerCase()}`}
             </DialogTitle>
