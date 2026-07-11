@@ -21,6 +21,8 @@ export interface ResourceConfig {
   columns: ColumnConfig[];
   fields: FieldConfig[];
   moderation?: boolean; // has approve / reject + pending queue
+  /** Backend supports `?search=` free-text search on this resource. */
+  searchable?: boolean;
   /** Extract a text label for a row (used in dialogs / delete confirmation). */
   titleKey: string;
 }
@@ -61,6 +63,7 @@ export const resources: ResourceConfig[] = [
     singular: 'Ville',
     description: 'Les villes et localités présentées sur le site.',
     titleKey: 'name',
+    searchable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Description', render: (r) => truncate(r.description) },
@@ -93,6 +96,7 @@ export const resources: ResourceConfig[] = [
     description: 'Sites et monuments. Les contributions publiques passent en modération.',
     titleKey: 'name',
     moderation: true,
+    searchable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Ville', render: (r) => refName(r.city) },
@@ -127,6 +131,7 @@ export const resources: ResourceConfig[] = [
     singular: 'Figure historique',
     description: 'Personnalités et figures marquantes rattachées à une ville.',
     titleKey: 'name',
+    searchable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Ville', render: (r) => refName(r.city) },

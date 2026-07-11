@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Check, MoreHorizontal, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Check, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import type { ResourceConfig } from '@/config/resources';
 import { useCollection, useCrudMutations, useModeration } from '@/lib/crud';
+import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { useAuth } from '@/auth/auth-context';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import {
   Table,
@@ -57,10 +59,17 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
   const [deleting, setDeleting] = useState<Row | null>(null);
   const [rejecting, setRejecting] = useState<Row | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim());
 
   const isPendingTab = config.moderation && tab === 'pending';
   const listPath = isPendingTab ? `${config.path}/pending` : config.path;
-  const { data, isLoading } = useCollection<Row>(listPath);
+  // Search is only wired on the public list endpoint (not the pending queue).
+  const params =
+    config.searchable && !isPendingTab && debouncedSearch
+      ? { search: debouncedSearch }
+      : undefined;
+  const { data, isLoading } = useCollection<Row>(listPath, params);
 
   const { create, update, remove } = useCrudMutations(config.path, config.singular);
   const moderation = useModeration(config.path);
@@ -105,20 +114,42 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
         }
       />
 
-      {config.moderation && (
-        <Tabs
-          value={tab}
-          onValueChange={(v) => setTab(v as 'all' | 'pending')}
-          className="mb-4"
-        >
-          <TabsList>
-            <TabsTrigger value="all">Tous</TabsTrigger>
-            {canModerate && (
-              <TabsTrigger value="pending">En attente</TabsTrigger>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        {config.moderation ? (
+          <Tabs value={tab} onValueChange={(v) => setTab(v as 'all' | 'pending')}>
+            <TabsList>
+              <TabsTrigger value="all">Tous</TabsTrigger>
+              {canModerate && (
+                <TabsTrigger value="pending">En attente</TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
+        ) : (
+          <span />
+        )}
+
+        {config.searchable && !isPendingTab && (
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={`Rechercher un ${config.singular.toLowerCase()}…`}
+              className="pl-9"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
+                aria-label="Effacer la recherche"
+              >
+                <X className="h-4 w-4" />
+              </button>
             )}
-          </TabsList>
-        </Tabs>
-      )}
+          </div>
+        )}
+      </div>
 
       <Card>
         {isLoading ? (
@@ -129,9 +160,11 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
           <div className="p-6">
             <EmptyState
               message={
-                isPendingTab
-                  ? 'Aucun contenu en attente de validation.'
-                  : 'Aucun élément. Cliquez sur « Ajouter » pour commencer.'
+                debouncedSearch
+                  ? `Aucun résultat pour « ${debouncedSearch} ».`
+                  : isPendingTab
+                    ? 'Aucun contenu en attente de validation.'
+                    : 'Aucun élément. Cliquez sur « Ajouter » pour commencer.'
               }
             />
           </div>
