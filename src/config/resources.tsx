@@ -75,7 +75,13 @@ export const resources: ResourceConfig[] = [
     fields: [
       { name: 'name', label: 'Nom', type: 'text', required: true, placeholder: 'Ouidah' },
       { name: 'description', label: 'Description', type: 'textarea', required: true },
-      { name: 'history', label: 'Histoire', type: 'textarea', help: 'Contexte historique (optionnel).' },
+      {
+        name: 'history',
+        label: 'Histoire',
+        type: 'richtext',
+        help: 'Contexte historique (mise en forme possible, optionnel).',
+        placeholder: "Racontez l'histoire de la ville…",
+      },
       locationField,
     ],
   },
@@ -98,7 +104,12 @@ export const resources: ResourceConfig[] = [
     fields: [
       { name: 'name', label: 'Nom', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea', required: true },
-      { name: 'history', label: 'Histoire', type: 'textarea' },
+      {
+        name: 'history',
+        label: 'Histoire',
+        type: 'richtext',
+        placeholder: "Racontez l'histoire du site…",
+      },
       {
         name: 'city',
         label: 'Ville',
@@ -124,7 +135,12 @@ export const resources: ResourceConfig[] = [
     fields: [
       { name: 'name', label: 'Nom', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea', required: true },
-      { name: 'biography', label: 'Biographie', type: 'textarea' },
+      {
+        name: 'biography',
+        label: 'Biographie',
+        type: 'richtext',
+        placeholder: 'Rédigez la biographie…',
+      },
       {
         name: 'city',
         label: 'Ville',

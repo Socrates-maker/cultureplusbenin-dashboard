@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ReferenceSelect } from './ReferenceSelect';
+import { RichTextEditor } from './RichTextEditor';
 
 interface Props {
   fields: FieldConfig[];
@@ -93,6 +94,22 @@ export function ResourceForm({
                     placeholder={field.placeholder}
                     rows={4}
                     {...register(field.name, { required: field.required })}
+                  />
+                );
+
+              case 'richtext':
+                return (
+                  <Controller
+                    control={control}
+                    name={field.name}
+                    rules={{ required: field.required }}
+                    render={({ field: f }) => (
+                      <RichTextEditor
+                        value={(f.value as string) ?? ''}
+                        onChange={f.onChange}
+                        placeholder={field.placeholder}
+                      />
+                    )}
                   />
                 );
 

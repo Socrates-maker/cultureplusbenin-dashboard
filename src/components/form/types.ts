@@ -1,6 +1,7 @@
 export type FieldType =
   | 'text'
   | 'textarea'
+  | 'richtext'
   | 'number'
   | 'email'
   | 'password'
