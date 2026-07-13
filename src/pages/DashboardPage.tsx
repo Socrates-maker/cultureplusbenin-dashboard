@@ -73,7 +73,7 @@ export function DashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Villes" value={num(cities.data)} icon={Building2} to="/cities" />
+        <StatCard label="Communes" value={num(cities.data)} icon={Building2} to="/cities" />
         <StatCard label="Sites touristiques" value={num(sites.data)} icon={MapPinned} to="/tourist-sites" />
         <StatCard label="Figures historiques" value={num(figures.data)} icon={Landmark} to="/historical-figures" />
         <StatCard label="Témoignages" value={num(testimonials.data)} icon={MessageSquareQuote} to="/testimonials" />

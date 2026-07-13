@@ -97,10 +97,10 @@ const locationField: FieldConfig = {
 /** Optional city attachment shared by the editorial resources. */
 const optionalCityField: FieldConfig = {
   name: 'city',
-  label: 'Ville',
+  label: 'Commune',
   type: 'reference',
   reference: { path: '/cities', labelKey: 'name' },
-  help: 'Optionnel — rattache le contenu à une ville.',
+  help: 'Optionnel — rattache le contenu à une commune.',
 };
 
 export const STORY_CATEGORY_LABELS: Record<StoryCategory, string> = {
@@ -123,9 +123,9 @@ export const resources: ResourceConfig[] = [
   {
     key: 'cities',
     path: '/cities',
-    title: 'Villes',
-    singular: 'Ville',
-    description: 'Les villes et localités présentées sur le site.',
+    title: 'Communes',
+    singular: 'Commune',
+    description: 'Les communes et localités présentées sur le site.',
     titleKey: 'name',
     searchable: true,
     taggable: true,
@@ -149,7 +149,7 @@ export const resources: ResourceConfig[] = [
         label: 'Histoire',
         type: 'richtext',
         help: 'Contexte historique (mise en forme possible, optionnel).',
-        placeholder: "Racontez l'histoire de la ville…",
+        placeholder: "Racontez l'histoire de la commune…",
       },
       locationField,
       tagsField('/cities'),
@@ -167,7 +167,7 @@ export const resources: ResourceConfig[] = [
     taggable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
-      { header: 'Ville', render: (r) => refName(r.city) },
+      { header: 'Commune', render: (r) => refName(r.city) },
       tagsColumn,
       {
         header: 'Statut',
@@ -185,7 +185,7 @@ export const resources: ResourceConfig[] = [
       },
       {
         name: 'city',
-        label: 'Ville',
+        label: 'Commune',
         type: 'reference',
         required: true,
         reference: { path: '/cities', labelKey: 'name' },
@@ -199,13 +199,13 @@ export const resources: ResourceConfig[] = [
     path: '/historical-figures',
     title: 'Figures historiques',
     singular: 'Figure historique',
-    description: 'Personnalités et figures marquantes rattachées à une ville.',
+    description: 'Personnalités et figures marquantes rattachées à une commune.',
     titleKey: 'name',
     searchable: true,
     taggable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
-      { header: 'Ville', render: (r) => refName(r.city) },
+      { header: 'Commune', render: (r) => refName(r.city) },
       { header: 'Description', render: (r) => truncate(r.description) },
       tagsColumn,
     ],
@@ -220,7 +220,7 @@ export const resources: ResourceConfig[] = [
       },
       {
         name: 'city',
-        label: 'Ville',
+        label: 'Commune',
         type: 'reference',
         required: true,
         reference: { path: '/cities', labelKey: 'name' },
@@ -245,7 +245,7 @@ export const resources: ResourceConfig[] = [
     columns: [
       { header: 'Titre', key: 'title', className: 'font-medium' },
       { header: 'Catégorie', render: (r) => <CategoryBadge category={r.category} /> },
-      { header: 'Ville', render: (r) => refName(r.city) },
+      { header: 'Commune', render: (r) => refName(r.city) },
       tagsColumn,
     ],
     fields: [
@@ -280,7 +280,7 @@ export const resources: ResourceConfig[] = [
     taggable: true,
     columns: [
       { header: 'Titre', key: 'title', className: 'font-medium' },
-      { header: 'Ville', render: (r) => refName(r.city) },
+      { header: 'Commune', render: (r) => refName(r.city) },
       { header: 'Description', render: (r) => truncate(r.description) },
       tagsColumn,
     ],
@@ -309,7 +309,7 @@ export const resources: ResourceConfig[] = [
     columns: [
       { header: 'Titre', key: 'title', className: 'font-medium' },
       { header: 'Date', render: (r) => formatDate(r.date as string) },
-      { header: 'Ville', render: (r) => refName(r.city) },
+      { header: 'Commune', render: (r) => refName(r.city) },
       tagsColumn,
     ],
     fields: [
@@ -331,7 +331,7 @@ export const resources: ResourceConfig[] = [
     path: '/galleries',
     title: 'Galeries',
     singular: 'Galerie',
-    description: 'Collections de médias rattachées à une ville ou un site.',
+    description: 'Collections de médias rattachées à une commune ou un site.',
     titleKey: 'name',
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
@@ -348,7 +348,7 @@ export const resources: ResourceConfig[] = [
         required: true,
         createOnly: true,
         options: [
-          { label: 'Ville', value: 'City' },
+          { label: 'Commune', value: 'City' },
           { label: 'Site touristique', value: 'TouristSite' },
           { label: 'Récit', value: 'Story' },
           { label: 'Tradition', value: 'Tradition' },
@@ -379,7 +379,7 @@ export const resources: ResourceConfig[] = [
     path: '/testimonials',
     title: 'Témoignages',
     singular: 'Témoignage',
-    description: 'Témoignages sur une ville, un site ou une figure historique.',
+    description: 'Témoignages sur une commune, un site ou une figure historique.',
     titleKey: 'title',
     moderation: true,
     taggable: true,
@@ -402,7 +402,7 @@ export const resources: ResourceConfig[] = [
         required: true,
         createOnly: true,
         options: [
-          { label: 'Ville', value: 'City' },
+          { label: 'Commune', value: 'City' },
           { label: 'Site touristique', value: 'TouristSite' },
           { label: 'Figure historique', value: 'HistoricalFigure' },
           { label: 'Récit', value: 'Story' },

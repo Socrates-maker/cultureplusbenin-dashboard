@@ -41,7 +41,7 @@ export const navSections: NavSection[] = [
   {
     title: 'Contenu',
     items: [
-      { label: 'Villes', to: '/cities', icon: Building2, roles: ALL },
+      { label: 'Communes', to: '/cities', icon: Building2, roles: ALL },
       { label: 'Sites touristiques', to: '/tourist-sites', icon: MapPinned, roles: ALL },
       { label: 'Figures historiques', to: '/historical-figures', icon: Landmark, roles: ALL },
       { label: 'Récits', to: '/stories', icon: BookOpen, roles: ALL },

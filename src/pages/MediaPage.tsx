@@ -46,7 +46,7 @@ const OWNER_SOURCES: Record<MediaOwnerType, { path: string; labelKey: string }> 
 };
 
 const OWNER_LABELS: Record<MediaOwnerType, string> = {
-  City: 'Ville',
+  City: 'Commune',
   TouristSite: 'Site touristique',
   Gallery: 'Galerie',
   HistoricalFigure: 'Figure historique',
