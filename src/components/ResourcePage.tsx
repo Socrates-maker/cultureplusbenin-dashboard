@@ -29,6 +29,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from './PageHeader';
@@ -63,6 +70,7 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
   const [rejectReason, setRejectReason] = useState('');
   const [search, setSearch] = useState('');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
+  const [enumFilter, setEnumFilter] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim());
 
   const isPendingTab = config.moderation && tab === 'pending';
@@ -75,6 +83,8 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
     filters.search = debouncedSearch;
   if (config.taggable && !isPendingTab && tagFilter.length > 0)
     filters.tags = tagFilter.join(',');
+  if (config.filter && !isPendingTab && enumFilter)
+    filters[config.filter.name] = enumFilter;
   const params = Object.keys(filters).length > 0 ? filters : undefined;
   const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
     usePaginatedCollection<Row>(listPath, params);
@@ -135,6 +145,37 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
         )}
 
         <div className="flex flex-wrap items-center gap-2">
+          {config.filter && !isPendingTab && (
+            <div className="flex items-center gap-1">
+              <div className="w-56">
+                <Select
+                  value={enumFilter || undefined}
+                  onValueChange={setEnumFilter}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={config.filter.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {config.filter.options.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {enumFilter && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEnumFilter('')}
+                  aria-label="Effacer le filtre"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
           {config.taggable && !isPendingTab && (
             <TagFilter
               path={config.path}
@@ -177,8 +218,8 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
               message={
                 debouncedSearch
                   ? `Aucun résultat pour « ${debouncedSearch} ».`
-                  : tagFilter.length > 0
-                    ? 'Aucun résultat pour ces tags.'
+                  : tagFilter.length > 0 || enumFilter
+                    ? 'Aucun résultat pour ces filtres.'
                     : isPendingTab
                     ? 'Aucun contenu en attente de validation.'
                     : 'Aucun élément. Cliquez sur « Ajouter » pour commencer.'

@@ -3,6 +3,7 @@ export type FieldType =
   | 'textarea'
   | 'richtext'
   | 'number'
+  | 'date'
   | 'email'
   | 'password'
   | 'url'

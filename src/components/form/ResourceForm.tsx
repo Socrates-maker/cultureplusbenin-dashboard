@@ -34,6 +34,9 @@ function buildDefaults(fields: FieldConfig[], values?: Record<string, unknown>) 
       else if (f.type === 'location')
         out[f.name] = { address: '', latitude: '', longitude: '' };
       else out[f.name] = f.defaultValue ?? '';
+    } else if (f.type === 'date' && typeof out[f.name] === 'string') {
+      // The API returns full ISO datetimes; <input type="date"> wants yyyy-mm-dd.
+      out[f.name] = (out[f.name] as string).slice(0, 10);
     }
   }
   return out;
@@ -122,6 +125,16 @@ export function ResourceForm({
                     id={field.name}
                     type="number"
                     step="any"
+                    placeholder={field.placeholder}
+                    {...register(field.name, { required: field.required })}
+                  />
+                );
+
+              case 'date':
+                return (
+                  <Input
+                    id={field.name}
+                    type="date"
                     placeholder={field.placeholder}
                     {...register(field.name, { required: field.required })}
                   />

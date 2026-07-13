@@ -57,7 +57,44 @@ export interface HistoricalFigure extends BaseDoc {
   tags?: string[];
 }
 
-export type GalleryOwnerType = 'City' | 'TouristSite';
+export type StoryCategory =
+  | 'resistance'
+  | 'spiritualite'
+  | 'histoire-contemporaine'
+  | 'conte';
+
+export interface Story extends BaseDoc {
+  title: string;
+  description: string;
+  body: string;
+  category: StoryCategory;
+  city?: string | City;
+  tags?: string[];
+}
+
+export interface Tradition extends BaseDoc {
+  title: string;
+  description: string;
+  origin?: string;
+  city?: string | City;
+  tags?: string[];
+}
+
+export interface Event extends BaseDoc {
+  title: string;
+  description: string;
+  origin?: string;
+  date: string;
+  city?: string | City;
+  tags?: string[];
+}
+
+export type GalleryOwnerType =
+  | 'City'
+  | 'TouristSite'
+  | 'Story'
+  | 'Tradition'
+  | 'Event';
 
 export interface Gallery extends BaseDoc {
   name: string;
@@ -72,7 +109,10 @@ export type MediaOwnerType =
   | 'TouristSite'
   | 'Gallery'
   | 'HistoricalFigure'
-  | 'Testimonial';
+  | 'Testimonial'
+  | 'Story'
+  | 'Tradition'
+  | 'Event';
 
 export interface Media extends BaseDoc {
   name: string;
@@ -85,7 +125,13 @@ export interface Media extends BaseDoc {
   tags?: string[];
 }
 
-export type TestimonialSubjectType = 'City' | 'TouristSite' | 'HistoricalFigure';
+export type TestimonialSubjectType =
+  | 'City'
+  | 'TouristSite'
+  | 'HistoricalFigure'
+  | 'Story'
+  | 'Tradition'
+  | 'Event';
 
 export interface Testimonial extends BaseDoc {
   title: string;

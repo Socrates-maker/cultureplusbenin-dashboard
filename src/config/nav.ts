@@ -9,6 +9,9 @@ import {
   Brain,
   HelpCircle,
   FileImage,
+  BookOpen,
+  Scroll,
+  CalendarDays,
   type LucideIcon,
 } from 'lucide-react';
 import type { Role } from '@/lib/types';
@@ -41,6 +44,9 @@ export const navSections: NavSection[] = [
       { label: 'Villes', to: '/cities', icon: Building2, roles: ALL },
       { label: 'Sites touristiques', to: '/tourist-sites', icon: MapPinned, roles: ALL },
       { label: 'Figures historiques', to: '/historical-figures', icon: Landmark, roles: ALL },
+      { label: 'Récits', to: '/stories', icon: BookOpen, roles: ALL },
+      { label: 'Traditions', to: '/traditions', icon: Scroll, roles: ALL },
+      { label: 'Événements', to: '/events', icon: CalendarDays, roles: ALL },
       { label: 'Galeries', to: '/galleries', icon: Images, roles: ALL },
       { label: 'Témoignages', to: '/testimonials', icon: MessageSquareQuote, roles: ALL },
       { label: 'Médias', to: '/media', icon: FileImage, roles: ALL },

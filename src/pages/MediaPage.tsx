@@ -40,6 +40,9 @@ const OWNER_SOURCES: Record<MediaOwnerType, { path: string; labelKey: string }> 
   Gallery: { path: '/galleries', labelKey: 'name' },
   HistoricalFigure: { path: '/historical-figures', labelKey: 'name' },
   Testimonial: { path: '/testimonials', labelKey: 'title' },
+  Story: { path: '/stories', labelKey: 'title' },
+  Tradition: { path: '/traditions', labelKey: 'title' },
+  Event: { path: '/events', labelKey: 'title' },
 };
 
 const OWNER_LABELS: Record<MediaOwnerType, string> = {
@@ -48,6 +51,9 @@ const OWNER_LABELS: Record<MediaOwnerType, string> = {
   Gallery: 'Galerie',
   HistoricalFigure: 'Figure historique',
   Testimonial: 'Témoignage',
+  Story: 'Récit',
+  Tradition: 'Tradition',
+  Event: 'Événement',
 };
 
 function MediaThumb({ media }: { media: Media }) {
