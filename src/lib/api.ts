@@ -2,6 +2,14 @@ import axios from 'axios';
 
 export const TOKEN_KEY = 'cultureplus.token';
 
+/** Envelope returned by paginated list endpoints. */
+export interface Paginated<T> {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
 });

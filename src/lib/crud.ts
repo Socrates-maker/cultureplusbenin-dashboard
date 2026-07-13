@@ -1,26 +1,97 @@
+import { useEffect, useState } from 'react';
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
   type UseQueryOptions,
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { api, apiError } from './api';
+import { api, apiError, type Paginated } from './api';
+
+/** Page size used by the paginated admin tables (backend default is 20, max 100). */
+export const PAGE_SIZE = 20;
 
 /**
- * Generic collection hook. `path` is the REST base (e.g. `/cities`).
- * `params` are forwarded as query string arguments.
+ * Collection hook for small lists (select options, filters…). List endpoints
+ * are paginated, so this unwraps the `{ data, page, limit, total }` envelope
+ * and explicitly requests the backend maximum (100 items). For tables that can
+ * grow beyond that, use `usePaginatedCollection` instead.
  */
 export function useCollection<T>(
   path: string,
   params?: Record<string, unknown>,
   options?: Partial<UseQueryOptions<T[]>>,
 ) {
+  const merged = { limit: 100, ...params };
   return useQuery<T[]>({
-    queryKey: [path, params ?? {}],
+    queryKey: [path, merged],
     queryFn: async () => {
-      const { data } = await api.get<T[]>(path, { params });
+      const { data } = await api.get<Paginated<T>>(path, { params: merged });
+      return data.data;
+    },
+    ...options,
+  });
+}
+
+/**
+ * Paginated collection hook for admin tables. Owns the page state, resets it
+ * when the path or filters change, and keeps the previous page's rows visible
+ * while the next page loads.
+ */
+export function usePaginatedCollection<T>(
+  path: string,
+  filters?: Record<string, unknown>,
+  options?: Partial<UseQueryOptions<Paginated<T>>>,
+) {
+  const [page, setPage] = useState(1);
+  const filterKey = JSON.stringify(filters ?? {});
+  useEffect(() => {
+    setPage(1);
+  }, [path, filterKey]);
+
+  const params = { ...filters, page, limit: PAGE_SIZE };
+  const query = useQuery<Paginated<T>>({
+    queryKey: [path, params],
+    queryFn: async () => {
+      const { data } = await api.get<Paginated<T>>(path, { params });
       return data;
+    },
+    placeholderData: keepPreviousData,
+    ...options,
+  });
+
+  const total = query.data?.total ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // If the current page disappears (e.g. last row of the last page deleted),
+  // fall back to the new last page.
+  useEffect(() => {
+    if (query.data && page > pageCount) setPage(pageCount);
+  }, [query.data, page, pageCount]);
+
+  return {
+    ...query,
+    rows: query.data?.data ?? [],
+    page,
+    setPage,
+    total,
+    pageCount,
+  };
+}
+
+/** Fetches only the `total` of a paginated collection (for stat counters). */
+export function useCollectionTotal(
+  path: string,
+  options?: Partial<UseQueryOptions<number>>,
+) {
+  return useQuery<number>({
+    queryKey: [path, 'total'],
+    queryFn: async () => {
+      const { data } = await api.get<Paginated<unknown>>(path, {
+        params: { page: 1, limit: 1 },
+      });
+      return data.total;
     },
     ...options,
   });

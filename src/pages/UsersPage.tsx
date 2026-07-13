@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { api, apiError } from '@/lib/api';
-import { useCollection, useCrudMutations } from '@/lib/crud';
+import { useCrudMutations, usePaginatedCollection } from '@/lib/crud';
 import { useAuth } from '@/auth/auth-context';
 import type { Role, User } from '@/lib/types';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { PaginationControls } from '@/components/PaginationControls';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -53,7 +54,8 @@ const roleMeta: Record<Role, { label: string; variant: 'default' | 'secondary' |
 
 export function UsersPage() {
   const { user: current } = useAuth();
-  const { data, isLoading } = useCollection<User>('/users');
+  const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
+    usePaginatedCollection<User>('/users');
   const { update, remove } = useCrudMutations('/users', 'Utilisateur');
   const [editing, setEditing] = useState<User | null>(null);
   const [creating, setCreating] = useState(false);
@@ -76,11 +78,12 @@ export function UsersPage() {
           <div className="p-10 text-center text-sm text-muted-foreground">
             Chargement…
           </div>
-        ) : (data ?? []).length === 0 ? (
+        ) : rows.length === 0 ? (
           <div className="p-6">
             <EmptyState message="Aucun utilisateur." />
           </div>
         ) : (
+          <>
           <Table>
             <TableHeader>
               <TableRow>
@@ -92,7 +95,7 @@ export function UsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(data ?? []).map((u) => (
+              {rows.map((u) => (
                 <TableRow key={u._id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -138,6 +141,14 @@ export function UsersPage() {
               ))}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageCount={pageCount}
+            total={total}
+            disabled={isFetching}
+            onPageChange={setPage}
+          />
+          </>
         )}
       </Card>
 

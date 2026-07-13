@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MoreHorizontal, Pencil, Plus, Trash2, Check, X } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, type Paginated } from '@/lib/api';
 import { useCrudMutations } from '@/lib/crud';
 import type { QuizCategory, QuizDifficulty, QuizOption } from '@/lib/types';
 import { PageHeader } from '@/components/PageHeader';
@@ -53,11 +53,6 @@ interface QuizQuestionRow {
   categoryId: string | null;
   isPublished: boolean;
   options: (QuizOption & { id: string })[];
-}
-
-interface Paginated<T> {
-  data: T[];
-  total: number;
 }
 
 const DIFFICULTIES: { value: QuizDifficulty; label: string }[] = [

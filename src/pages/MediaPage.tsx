@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, UploadCloud, ExternalLink, FileVideo, FileAudio } from 'lucide-react';
 import { api, apiError } from '@/lib/api';
-import { useCollection, useCrudMutations } from '@/lib/crud';
+import { useCrudMutations, usePaginatedCollection } from '@/lib/crud';
 import type { Media, MediaOwnerType, MediaType } from '@/lib/types';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { PaginationControls } from '@/components/PaginationControls';
 import { ReferenceSelect } from '@/components/form/ReferenceSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -73,7 +74,8 @@ export function MediaPage() {
   const [deleting, setDeleting] = useState<Media | null>(null);
 
   const filter = ownerType && owner ? { ownerType, owner } : ownerType ? { ownerType } : undefined;
-  const { data, isLoading } = useCollection<Media>('/media', filter);
+  const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
+    usePaginatedCollection<Media>('/media', filter);
   const { remove } = useCrudMutations('/media', 'Média');
 
   return (
@@ -139,13 +141,14 @@ export function MediaPage() {
             <div className="p-10 text-center text-sm text-muted-foreground">
               Chargement…
             </div>
-          ) : (data ?? []).length === 0 ? (
+          ) : rows.length === 0 ? (
             <div className="p-6">
               <EmptyState message="Aucun média." />
             </div>
           ) : (
+            <>
             <div className="divide-y">
-              {(data ?? []).map((m) => (
+              {rows.map((m) => (
                 <div key={m._id} className="flex items-center gap-4 p-4">
                   <MediaThumb media={m} />
                   <div className="min-w-0 flex-1">
@@ -180,6 +183,14 @@ export function MediaPage() {
                 </div>
               ))}
             </div>
+            <PaginationControls
+              page={page}
+              pageCount={pageCount}
+              total={total}
+              disabled={isFetching}
+              onPageChange={setPage}
+            />
+            </>
           )}
         </CardContent>
       </Card>

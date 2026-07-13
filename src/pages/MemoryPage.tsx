@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Check, MoreHorizontal, Pencil, Plus, Trash2, X } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, type Paginated } from '@/lib/api';
 import { useCrudMutations } from '@/lib/crud';
 import type { MemoryDifficulty } from '@/lib/types';
 import { PageHeader } from '@/components/PageHeader';
@@ -65,10 +65,10 @@ const diffVariant: Record<MemoryDifficulty, 'success' | 'warning' | 'destructive
 };
 
 export function MemoryPage() {
-  const { data, isLoading } = useQuery<{ data: MemoryRow[] }>({
+  const { data, isLoading } = useQuery<Paginated<MemoryRow>>({
     queryKey: ['/admin/memory/items'],
     queryFn: async () => {
-      const { data } = await api.get<{ data: MemoryRow[] }>('/admin/memory/items', {
+      const { data } = await api.get<Paginated<MemoryRow>>('/admin/memory/items', {
         params: { limit: 100 },
       });
       return data;

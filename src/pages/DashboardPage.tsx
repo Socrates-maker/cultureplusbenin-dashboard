@@ -7,7 +7,7 @@ import {
   Clock,
   ArrowRight,
 } from 'lucide-react';
-import { useCollection } from '@/lib/crud';
+import { useCollectionTotal } from '@/lib/crud';
 import { useAuth } from '@/auth/auth-context';
 import { PageHeader } from '@/components/PageHeader';
 import {
@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { TouristSite, Testimonial } from '@/lib/types';
 
 function StatCard({
   label,
@@ -50,24 +49,21 @@ function StatCard({
 
 export function DashboardPage() {
   const { user, hasRole } = useAuth();
-  const cities = useCollection<unknown>('/cities');
-  const sites = useCollection<TouristSite>('/tourist-sites');
-  const figures = useCollection<unknown>('/historical-figures');
-  const testimonials = useCollection<Testimonial>('/testimonials');
+  const cities = useCollectionTotal('/cities');
+  const sites = useCollectionTotal('/tourist-sites');
+  const figures = useCollectionTotal('/historical-figures');
+  const testimonials = useCollectionTotal('/testimonials');
 
   const isAdmin = hasRole('admin');
-  const pendingSites = useCollection<TouristSite>('/tourist-sites/pending', undefined, {
+  const pendingSites = useCollectionTotal('/tourist-sites/pending', {
     enabled: isAdmin,
   });
-  const pendingTestimonials = useCollection<Testimonial>(
-    '/testimonials/pending',
-    undefined,
-    { enabled: isAdmin },
-  );
+  const pendingTestimonials = useCollectionTotal('/testimonials/pending', {
+    enabled: isAdmin,
+  });
 
-  const num = (n?: unknown[]) => (n ? n.length : '…');
-  const pendingCount =
-    (pendingSites.data?.length ?? 0) + (pendingTestimonials.data?.length ?? 0);
+  const num = (n?: number) => n ?? '…';
+  const pendingCount = (pendingSites.data ?? 0) + (pendingTestimonials.data ?? 0);
 
   return (
     <div>
@@ -97,7 +93,7 @@ export function DashboardPage() {
             <div className="flex items-center justify-between rounded-md border p-3">
               <span className="text-sm">
                 Sites touristiques :{' '}
-                <strong>{pendingSites.data?.length ?? 0}</strong> en attente
+                <strong>{pendingSites.data ?? 0}</strong> en attente
               </span>
               <Button asChild variant="ghost" size="sm">
                 <Link to="/tourist-sites">
@@ -108,8 +104,7 @@ export function DashboardPage() {
             <div className="flex items-center justify-between rounded-md border p-3">
               <span className="text-sm">
                 Témoignages :{' '}
-                <strong>{pendingTestimonials.data?.length ?? 0}</strong> en
-                attente
+                <strong>{pendingTestimonials.data ?? 0}</strong> en attente
               </span>
               <Button asChild variant="ghost" size="sm">
                 <Link to="/testimonials">

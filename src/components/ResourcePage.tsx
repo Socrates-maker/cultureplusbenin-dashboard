@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Check, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import type { ResourceConfig } from '@/config/resources';
-import { useCollection, useCrudMutations, useModeration } from '@/lib/crud';
+import { useCrudMutations, useModeration, usePaginatedCollection } from '@/lib/crud';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { useAuth } from '@/auth/auth-context';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from './PageHeader';
+import { PaginationControls } from './PaginationControls';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { ResourceForm } from './form/ResourceForm';
@@ -69,13 +70,12 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
     config.searchable && !isPendingTab && debouncedSearch
       ? { search: debouncedSearch }
       : undefined;
-  const { data, isLoading } = useCollection<Row>(listPath, params);
+  const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
+    usePaginatedCollection<Row>(listPath, params);
 
   const { create, update, remove } = useCrudMutations(config.path, config.singular);
   const moderation = useModeration(config.path);
   const canModerate = config.moderation && hasRole('admin');
-
-  const rows = data ?? [];
 
   const openCreate = () => {
     setEditing(null);
@@ -169,6 +169,7 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
             />
           </div>
         ) : (
+          <>
           <Table>
             <TableHeader>
               <TableRow>
@@ -234,6 +235,14 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
               ))}
             </TableBody>
           </Table>
+          <PaginationControls
+            page={page}
+            pageCount={pageCount}
+            total={total}
+            disabled={isFetching}
+            onPageChange={setPage}
+          />
+          </>
         )}
       </Card>
 
