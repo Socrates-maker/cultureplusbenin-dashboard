@@ -33,6 +33,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from './PageHeader';
 import { PaginationControls } from './PaginationControls';
+import { TagFilter } from './TagFilter';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EmptyState } from './EmptyState';
 import { ResourceForm } from './form/ResourceForm';
@@ -61,15 +62,20 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
   const [rejecting, setRejecting] = useState<Row | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [search, setSearch] = useState('');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const debouncedSearch = useDebouncedValue(search.trim());
 
   const isPendingTab = config.moderation && tab === 'pending';
   const listPath = isPendingTab ? `${config.path}/pending` : config.path;
-  // Search is only wired on the public list endpoint (not the pending queue).
-  const params =
-    config.searchable && !isPendingTab && debouncedSearch
-      ? { search: debouncedSearch }
-      : undefined;
+  // Search and tag filters are only wired on the public list endpoint (not
+  // the pending queue). `usePaginatedCollection` resets to page 1 when they
+  // change since they are part of the filters / query key.
+  const filters: Record<string, unknown> = {};
+  if (config.searchable && !isPendingTab && debouncedSearch)
+    filters.search = debouncedSearch;
+  if (config.taggable && !isPendingTab && tagFilter.length > 0)
+    filters.tags = tagFilter.join(',');
+  const params = Object.keys(filters).length > 0 ? filters : undefined;
   const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
     usePaginatedCollection<Row>(listPath, params);
 
@@ -128,27 +134,36 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
           <span />
         )}
 
-        {config.searchable && !isPendingTab && (
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Rechercher un ${config.singular.toLowerCase()}…`}
-              className="pl-9"
+        <div className="flex flex-wrap items-center gap-2">
+          {config.taggable && !isPendingTab && (
+            <TagFilter
+              path={config.path}
+              value={tagFilter}
+              onChange={setTagFilter}
             />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
-                aria-label="Effacer la recherche"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
+          )}
+          {config.searchable && !isPendingTab && (
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`Rechercher un ${config.singular.toLowerCase()}…`}
+                className="pl-9"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
+                  aria-label="Effacer la recherche"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -162,7 +177,9 @@ export function ResourcePage({ config }: { config: ResourceConfig }) {
               message={
                 debouncedSearch
                   ? `Aucun résultat pour « ${debouncedSearch} ».`
-                  : isPendingTab
+                  : tagFilter.length > 0
+                    ? 'Aucun résultat pour ces tags.'
+                    : isPendingTab
                     ? 'Aucun contenu en attente de validation.'
                     : 'Aucun élément. Cliquez sur « Ajouter » pour commencer.'
               }

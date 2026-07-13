@@ -35,6 +35,7 @@ export interface City extends BaseDoc {
   description: string;
   history?: string;
   location: Location;
+  tags?: string[];
 }
 
 export interface TouristSite extends BaseDoc {
@@ -45,6 +46,7 @@ export interface TouristSite extends BaseDoc {
   city: string | City;
   status: ModerationStatus;
   rejectionReason?: string;
+  tags?: string[];
 }
 
 export interface HistoricalFigure extends BaseDoc {
@@ -52,6 +54,7 @@ export interface HistoricalFigure extends BaseDoc {
   description: string;
   biography?: string;
   city: string | City;
+  tags?: string[];
 }
 
 export type GalleryOwnerType = 'City' | 'TouristSite';
@@ -79,6 +82,7 @@ export interface Media extends BaseDoc {
   publicId?: string;
   ownerType: MediaOwnerType;
   owner: string;
+  tags?: string[];
 }
 
 export type TestimonialSubjectType = 'City' | 'TouristSite' | 'HistoricalFigure';
@@ -90,6 +94,7 @@ export interface Testimonial extends BaseDoc {
   subject: string;
   status: ModerationStatus;
   rejectionReason?: string;
+  tags?: string[];
 }
 
 export interface User extends BaseDoc {

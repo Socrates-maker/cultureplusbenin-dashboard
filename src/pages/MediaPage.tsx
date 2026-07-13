@@ -8,7 +8,9 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PaginationControls } from '@/components/PaginationControls';
+import { TagFilter } from '@/components/TagFilter';
 import { ReferenceSelect } from '@/components/form/ReferenceSelect';
+import { TagsInput } from '@/components/form/TagsInput';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -69,11 +71,16 @@ function MediaThumb({ media }: { media: Media }) {
 export function MediaPage() {
   const [ownerType, setOwnerType] = useState<MediaOwnerType | ''>('');
   const [owner, setOwner] = useState('');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Media | null>(null);
   const [deleting, setDeleting] = useState<Media | null>(null);
 
-  const filter = ownerType && owner ? { ownerType, owner } : ownerType ? { ownerType } : undefined;
+  const filters: Record<string, unknown> = {};
+  if (ownerType) filters.ownerType = ownerType;
+  if (ownerType && owner) filters.owner = owner;
+  if (tagFilter.length > 0) filters.tags = tagFilter.join(',');
+  const filter = Object.keys(filters).length > 0 ? filters : undefined;
   const { rows, isLoading, isFetching, page, setPage, pageCount, total } =
     usePaginatedCollection<Media>('/media', filter);
   const { remove } = useCrudMutations('/media', 'Média');
@@ -122,12 +129,14 @@ export function MediaPage() {
             />
           </div>
         )}
-        {(ownerType || owner) && (
+        <TagFilter path="/media" value={tagFilter} onChange={setTagFilter} />
+        {(ownerType || owner || tagFilter.length > 0) && (
           <Button
             variant="ghost"
             onClick={() => {
               setOwnerType('');
               setOwner('');
+              setTagFilter([]);
             }}
           >
             Réinitialiser
@@ -156,6 +165,15 @@ export function MediaPage() {
                     <p className="truncate text-sm text-muted-foreground">
                       {m.description}
                     </p>
+                    {(m.tags?.length ?? 0) > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {m.tags!.map((t) => (
+                          <Badge key={t} variant="outline">
+                            {t}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Badge variant="secondary">{m.type}</Badge>
                   <Badge variant="outline">{OWNER_LABELS[m.ownerType]}</Badge>
@@ -239,6 +257,7 @@ function MediaFormDialog({
   const [type, setType] = useState<MediaType>(media?.type ?? 'image');
   const [url, setUrl] = useState(media?.url ?? '');
   const [publicId, setPublicId] = useState<string | undefined>(media?.publicId);
+  const [tags, setTags] = useState<string[]>(media?.tags ?? []);
   const { create, update } = useCrudMutations('/media', 'Média');
   const pending = create.isPending || update.isPending;
 
@@ -250,6 +269,7 @@ function MediaFormDialog({
     setType('image');
     setUrl('');
     setPublicId(undefined);
+    setTags([]);
   };
 
   const upload = useMutation({
@@ -277,7 +297,7 @@ function MediaFormDialog({
       toast.error('Téléversez un fichier ou saisissez une URL.');
       return;
     }
-    const payload = { name, description, type, url, publicId, ownerType, owner };
+    const payload = { name, description, type, url, publicId, ownerType, owner, tags };
     if (media) {
       update.mutate(
         { id: media._id, payload },
@@ -402,6 +422,16 @@ function MediaFormDialog({
               />
             </div>
           )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="m-tags">Tags</Label>
+            <TagsInput
+              id="m-tags"
+              value={tags}
+              onChange={setTags}
+              tagSource="/media"
+            />
+          </div>
           </div>
 
           <DialogFooter className="shrink-0 border-t pt-4">

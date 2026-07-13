@@ -10,7 +10,8 @@ export type FieldType =
   | 'reference'
   | 'polymorphic'
   | 'location'
-  | 'switch';
+  | 'switch'
+  | 'tags';
 
 export interface SelectOption {
   label: string;
@@ -40,6 +41,11 @@ export interface FieldConfig {
     dependsOn: string;
     sources: Record<string, { path: string; labelKey: string }>;
   };
+  /**
+   * For `tags`: REST base path of the resource whose `/tags` route feeds
+   * autocomplete suggestions.
+   */
+  tagSource?: string;
   /** Only show the field when creating (not editing). */
   createOnly?: boolean;
   defaultValue?: unknown;

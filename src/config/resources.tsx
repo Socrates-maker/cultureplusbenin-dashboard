@@ -23,6 +23,8 @@ export interface ResourceConfig {
   moderation?: boolean; // has approve / reject + pending queue
   /** Backend supports `?search=` free-text search on this resource. */
   searchable?: boolean;
+  /** Backend supports `tags` (documents, `?tags=` filter and `/tags` route). */
+  taggable?: boolean;
   /** Extract a text label for a row (used in dialogs / delete confirmation). */
   titleKey: string;
 }
@@ -48,6 +50,40 @@ export function StatusBadge({ status }: { status?: ModerationStatus }) {
   return <Badge variant="warning">En attente</Badge>;
 }
 
+export function TagsCell({ tags }: { tags?: unknown }) {
+  const list = Array.isArray(tags) ? (tags as string[]) : [];
+  if (list.length === 0) return <>—</>;
+  const shown = list.slice(0, 3);
+  return (
+    <div className="flex flex-wrap gap-1">
+      {shown.map((t) => (
+        <Badge key={t} variant="outline">
+          {t}
+        </Badge>
+      ))}
+      {list.length > shown.length && (
+        <Badge variant="secondary">+{list.length - shown.length}</Badge>
+      )}
+    </div>
+  );
+}
+
+const tagsColumn = {
+  header: 'Tags',
+  render: (r: Record<string, unknown>) => <TagsCell tags={r.tags} />,
+};
+
+/** Free-form tags field, with autocomplete fed by `GET <path>/tags`. */
+function tagsField(path: string): FieldConfig {
+  return {
+    name: 'tags',
+    label: 'Tags',
+    type: 'tags',
+    tagSource: path,
+    help: '20 tags max, 30 caractères chacun (normalisés en minuscules).',
+  };
+}
+
 const locationField: FieldConfig = {
   name: 'location',
   label: 'Localisation',
@@ -64,6 +100,7 @@ export const resources: ResourceConfig[] = [
     description: 'Les villes et localités présentées sur le site.',
     titleKey: 'name',
     searchable: true,
+    taggable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Description', render: (r) => truncate(r.description) },
@@ -74,6 +111,7 @@ export const resources: ResourceConfig[] = [
           return loc?.address ?? '—';
         },
       },
+      tagsColumn,
     ],
     fields: [
       { name: 'name', label: 'Nom', type: 'text', required: true, placeholder: 'Ouidah' },
@@ -86,6 +124,7 @@ export const resources: ResourceConfig[] = [
         placeholder: "Racontez l'histoire de la ville…",
       },
       locationField,
+      tagsField('/cities'),
     ],
   },
   {
@@ -97,9 +136,11 @@ export const resources: ResourceConfig[] = [
     titleKey: 'name',
     moderation: true,
     searchable: true,
+    taggable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Ville', render: (r) => refName(r.city) },
+      tagsColumn,
       {
         header: 'Statut',
         render: (r) => <StatusBadge status={r.status as ModerationStatus} />,
@@ -122,6 +163,7 @@ export const resources: ResourceConfig[] = [
         reference: { path: '/cities', labelKey: 'name' },
       },
       locationField,
+      tagsField('/tourist-sites'),
     ],
   },
   {
@@ -132,10 +174,12 @@ export const resources: ResourceConfig[] = [
     description: 'Personnalités et figures marquantes rattachées à une ville.',
     titleKey: 'name',
     searchable: true,
+    taggable: true,
     columns: [
       { header: 'Nom', key: 'name', className: 'font-medium' },
       { header: 'Ville', render: (r) => refName(r.city) },
       { header: 'Description', render: (r) => truncate(r.description) },
+      tagsColumn,
     ],
     fields: [
       { name: 'name', label: 'Nom', type: 'text', required: true },
@@ -153,6 +197,7 @@ export const resources: ResourceConfig[] = [
         required: true,
         reference: { path: '/cities', labelKey: 'name' },
       },
+      tagsField('/historical-figures'),
     ],
   },
   {
@@ -205,9 +250,11 @@ export const resources: ResourceConfig[] = [
     description: 'Témoignages sur une ville, un site ou une figure historique.',
     titleKey: 'title',
     moderation: true,
+    taggable: true,
     columns: [
       { header: 'Titre', key: 'title', className: 'font-medium' },
       { header: 'Sujet', render: (r) => <Badge variant="secondary">{String(r.subjectType)}</Badge> },
+      tagsColumn,
       {
         header: 'Statut',
         render: (r) => <StatusBadge status={r.status as ModerationStatus} />,
@@ -243,6 +290,7 @@ export const resources: ResourceConfig[] = [
           },
         },
       },
+      tagsField('/testimonials'),
     ],
   },
 ];

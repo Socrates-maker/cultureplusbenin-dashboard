@@ -80,6 +80,26 @@ export function usePaginatedCollection<T>(
   };
 }
 
+/**
+ * Fetches the tag vocabulary of a taggable resource (`GET <basePath>/tags`,
+ * plain sorted string[]). Keyed under `[basePath, 'tags']` so the CRUD
+ * mutations' invalidation refreshes it when documents change.
+ */
+export function useTagOptions(
+  basePath?: string,
+  options?: Partial<UseQueryOptions<string[]>>,
+) {
+  return useQuery<string[]>({
+    queryKey: [basePath, 'tags'],
+    enabled: Boolean(basePath),
+    queryFn: async () => {
+      const { data } = await api.get<string[]>(`${basePath}/tags`);
+      return data;
+    },
+    ...options,
+  });
+}
+
 /** Fetches only the `total` of a paginated collection (for stat counters). */
 export function useCollectionTotal(
   path: string,

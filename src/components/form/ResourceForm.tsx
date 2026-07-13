@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { ReferenceSelect } from './ReferenceSelect';
 import { RichTextEditor } from './RichTextEditor';
+import { TagsInput } from './TagsInput';
 
 interface Props {
   fields: FieldConfig[];
@@ -29,6 +30,7 @@ function buildDefaults(fields: FieldConfig[], values?: Record<string, unknown>) 
   for (const f of fields) {
     if (out[f.name] === undefined) {
       if (f.type === 'switch') out[f.name] = f.defaultValue ?? true;
+      else if (f.type === 'tags') out[f.name] = f.defaultValue ?? [];
       else if (f.type === 'location')
         out[f.name] = { address: '', latitude: '', longitude: '' };
       else out[f.name] = f.defaultValue ?? '';
@@ -215,6 +217,23 @@ export function ResourceForm({
                   />
                 );
               }
+
+              case 'tags':
+                return (
+                  <Controller
+                    control={control}
+                    name={field.name}
+                    render={({ field: f }) => (
+                      <TagsInput
+                        id={field.name}
+                        value={(f.value as string[]) ?? []}
+                        onChange={f.onChange}
+                        placeholder={field.placeholder}
+                        tagSource={field.tagSource}
+                      />
+                    )}
+                  />
+                );
 
               case 'location':
                 return (
